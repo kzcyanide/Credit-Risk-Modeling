@@ -31,10 +31,10 @@ class dataTransformation:
         pass
 
         
-    def initiateDataTransformation(self,trainPath,testPath=None):
+    def initiateDataTransformation(self,traindf,testdf=None):
 
         try:
-            traindf = pd.read_csv(trainPath)
+            #traindf = pd.read_csv(trainPath)
             traindf = traindf[self.features]
 
             numericalFeatures = traindf.select_dtypes(include=['int64','float64']).columns.to_list()

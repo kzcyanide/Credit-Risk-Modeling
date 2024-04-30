@@ -20,6 +20,7 @@ from lightgbm import LGBMClassifier
 
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import precision_recall_fscore_support, accuracy_score
+from sklearn.preprocessing import LabelEncoder
 
 @dataclass
 class modelTrainerConfig():
@@ -33,6 +34,11 @@ class modelTrainer():
 
         y = df[target]
         X = df.drop(target,axis=1)
+
+        enc = LabelEncoder()
+        y = enc.fit_transform(y)
+
+
         
         fold = range(0,Config.n_splits)
         
@@ -82,8 +88,9 @@ class modelTrainer():
                     Scores.loc[fold,f'Precision Class {i}'][mdl] = precision[i]
                     Scores.loc[fold,f'Recall Class {i}'][mdl] = recall[i]
                     Scores.loc[fold,f'F1 Score Class {i}'][mdl] = f1_score[i]
+            #break
                 
-        return accuracy_score,Scores
+        return accuracyScore,Scores
 
 
     def initiateModelTrainer(self,traindf,test_arr = None):
@@ -95,19 +102,22 @@ class modelTrainer():
                       }
             drop_cols = []
 
-            accuracyReport,modelReport = self.trainModels(traindf,Config.features,Config.target)
+            accuracyReport,modelReport = self.trainModels(traindf,models,Config.features,Config.target)
+
+            avgAccuracyDict = accuracyReport.mean().to_dict()
 
 
 
-            bestModel = max(accuracyReport.mean().to_dict())
 
-            bestModel = models[bestModel]
-            bestScore = models[bestModel]
+            bestModel = max(avgAccuracyDict,key=lambda k: avgAccuracyDict[k])
+            bestScore = avgAccuracyDict[bestModel]
 
             if bestScore < 0.6:
                 raise CustomException("No best model found")
             
-            logging.info("Best found model on both training and testing dataset")
+            logging.info(f"Best found model {bestModel} on both training and testing dataset")
+            logging.info(f" Saving {bestModel} model")
+            bestModel = models[bestModel]
 
             saveObj(
                 filePath=self.modelTrainerConfig.trainedModelFilePath,
