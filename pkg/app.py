@@ -63,7 +63,7 @@ class ScoringItem(BaseModel):
     first_prod_enq2_PL: int  
     first_prod_enq2_others: int  
 
-model = loadObj('../models/model.pkl')
+model = loadObj('./models/model.pkl')
 
 @app.post('/')
 async def scoring_endpoint(item: ScoringItem):
